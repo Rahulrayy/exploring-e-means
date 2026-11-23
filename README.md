@@ -42,7 +42,7 @@ This is the picture that explains most of the project. It's 1024 centroids on 2-
 
 ![m=2 against the theoretical bound](figures/fig16_m2_vs_bound.png)
 
-The same thing as numbers. The dashed line is the best error you can get according to Zador's formula, and every dot is how far a setup ends above it. The usual setups are all around 40% above it. k-means++ helps Lloyd but not the paper's e-means.
+The same thing as numbers. The dashed line is the best error you can get according to Zador's formula, and every dot is how far a setup ends above it. Both methods from a random start are about 40% above it. k-means++ gets Lloyd down to +7%, but e-means from the same start is still +20%. e-means with α0 = 1 and revival off gets to +11% even from a random start, which was the first hint that revival is part of the problem.
 
 ### Regret of the step law
 
@@ -60,19 +60,19 @@ Just to check my implementation behaves like the paper's. e-means catches up wit
 
 ![Revival from k-means++](figures/fig17_revival_from_kmeanspp.png)
 
-From a good k-means++ start at m = 2, e-means with revival on ends worse than Lloyd from the same start. Turning revival off makes it 4-10% better on all 5 seeds. That's how I found that revival was the problem and not the step size.
+Each bar is how much the test error changes when I turn revival off, starting e-means from the same k-means++ centroids. At m = 2 it's 4-10% better (5 paired seeds), at m = 3 and 4 it barely matters. That's how I found that revival was the problem and not the step size.
 
 ### τ = 0.01 on every dataset
 
 ![tau = 0.01 on all datasets](figures/fig19_tau_confirm.png)
 
-So I tried just lowering the revival threshold everywhere. It's good at low dimension (about -4% on average) and does nothing on SIFT, DEEP and GloVe, but on Fashion-MNIST with k = 4096 it's +4% worse. So it can't be the default for everything, which is why the rule below checks the dimension first.
+So I tried just lowering the revival threshold everywhere. It's good at low dimension (about -4% on average) and does nothing on SIFT, DEEP and GloVe, but on Fashion-MNIST with k = 4096 it's +4% worse. So it can't be the default for everything, which is why the rule checks the dimension first.
 
 ### Second held-out test
 
 ![Second held-out test](figures/fig21_rule_test2.png)
 
-The final test of the rule, on datasets I hadn't touched before (a colour wheel image, a swiss roll, Laplace and Student-t data). Every dot is one (k, T) setting averaged over 5 paired seeds. Orange is k-means++ alone, blue is k-means++ with τ = 0.01. Everything is left of zero, so the rule always helped. The first test (fig20) is the same kind of plot. That one failed because on the retina image with k = 2048 the dimension estimate came out at 3.54, just above the threshold. The image only has about 17.8k distinct colours, so it only got 9 neighbours, which is why I added the floor of 20.
+The final test of the rule, on datasets I hadn't touched before (a colour wheel image, a swiss roll, Laplace and Student-t data). Every dot is one (k, T) setting averaged over 5 paired seeds. Orange is k-means++ alone, blue is k-means++ with τ = 0.01. Everything is left of zero, so the rule always helped. On the colour wheel and the swiss roll the two colours are on top of each other, so there it's all k-means++. On Laplace and Student-t the lower τ adds a lot on top. The first test (fig20) is the same kind of plot. That one failed because on the retina image with k = 2048 the dimension estimate came out at 3.54, just above the threshold. The image only has about 17.8k distinct colours, so it only got 9 neighbours, which is why I added the floor of 20.
 
 The rest of the figures are in `figures/`.
 
